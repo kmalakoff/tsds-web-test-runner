@@ -10,10 +10,10 @@
     "test",
     "typescript"
   ],
-  "homepage": "https://github.com/kmalakoff/ts-dev-stack",
+  "homepage": "https://github.com/kmalakoff/tsds-web-test-runner",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/kmalakoff/ts-dev-stack.git"
+    "url": "git+ssh://git@github.com/kmalakoff/tsds-web-test-runner.git"
   },
   "license": "MIT",
   "author": "Kevin Malakoff <kmalakoff@gmail.com> (https://github.com/kmalakoff)",
