@@ -22,6 +22,13 @@ const installSynESBuild = debounce(installSync, 300, { leading: true, trailing: 
 
 function worker(args: string[], options: CommandOptions, callback: CommandCallback): undefined {
   const cwd: string = (options.cwd as string) || process.cwd();
+  const { _, ...opts } = getopts(args, { stopEarly: true, alias: { config: 'c', 'dry-run': 'd' }, boolean: ['dry-run'] });
+  const filteredArgs = args.filter((arg) => arg !== '--dry-run' && arg !== '-d');
+
+  if (opts['dry-run']) {
+    console.log('Dry-run: would run browser tests with @web/test-runner');
+    return callback();
+  }
 
   link(cwd, installPath(options), (err, restore) => {
     if (err) return callback(err);
@@ -32,10 +39,9 @@ function worker(args: string[], options: CommandOptions, callback: CommandCallba
       installSynESBuild('esbuild', `${process.platform}-${process.arch}`, { cwd });
 
       const wtr = resolveBin('@web/test-runner', 'wtr');
-      const { _, ...opts } = getopts(args, { stopEarly: true, alias: { config: 'c' } });
       const spawnArgs = [];
       if (!opts.config) Array.prototype.push.apply(spawnArgs, ['--config', config]);
-      Array.prototype.push.apply(spawnArgs, args);
+      Array.prototype.push.apply(spawnArgs, filteredArgs);
       if (_.length === 0) Array.prototype.push.apply(spawnArgs, ['test/**/*.test.{ts,tsx,jsx,mjs}']);
 
       const queue = new Queue(1);
