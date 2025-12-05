@@ -59,7 +59,7 @@ function addTests(repo) {
         // Requires Playwright: npx -y playwright install --with-deps
         testBrowser([], { cwd: dest }, (err?: Error): undefined => {
           if (err) {
-            done(err.message);
+            done(err);
             return;
           }
           done();
