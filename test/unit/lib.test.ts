@@ -33,7 +33,7 @@ function addTests(repo) {
     const deps = { ...(modulePackage.dependencies || {}), ...(modulePackage.peerDependencies || {}) };
 
     before((cb) => {
-      installGitRepo(repo, dest, (err?: Error): undefined => {
+      installGitRepo(repo, dest, (err?: Error): void => {
         if (err) {
           cb(err);
           return;
@@ -57,7 +57,7 @@ function addTests(repo) {
     describe('happy path', () => {
       it('test:browser', (done) => {
         // Requires Playwright: npx -y playwright install --with-deps
-        testBrowser([], { cwd: dest }, (err?: Error): undefined => {
+        testBrowser([], { cwd: dest }, (err?: Error): void => {
           if (err) {
             done(err);
             return;
