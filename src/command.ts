@@ -21,7 +21,7 @@ const config = path.join(dist, 'esm', 'wtr.config.js');
 const installSyncRollup = debounce(installSync, 300, { leading: true, trailing: false });
 const installSynESBuild = debounce(installSync, 300, { leading: true, trailing: false });
 
-function worker(args: string[], options: CommandOptions, callback: CommandCallback): undefined {
+function worker(args: string[], options: CommandOptions, callback: CommandCallback) {
   const cwd: string = (options.cwd as string) || process.cwd();
   const { _, ...opts } = getopts(args, { stopEarly: true, alias: { config: 'c', 'dry-run': 'd' }, boolean: ['dry-run'] });
   const filteredArgs = args.filter((arg) => arg !== '--dry-run' && arg !== '-d');
@@ -54,6 +54,6 @@ function worker(args: string[], options: CommandOptions, callback: CommandCallba
   });
 }
 
-export default function testBrowser(args: string[], options: CommandOptions, callback: CommandCallback): undefined {
+export default function testBrowser(args: string[], options: CommandOptions, callback: CommandCallback): void {
   version !== 'local' ? workerWrapper('stable', args, options, callback) : worker(args, options, callback);
 }
