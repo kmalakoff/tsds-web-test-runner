@@ -16,8 +16,8 @@ const __dirname = path.dirname(typeof __filename === 'undefined' ? url.fileURLTo
 const dist = path.join(__dirname, '..');
 const config = path.join(dist, 'esm', 'wtr.config.js');
 
-const installSyncRollup = debounce(installSync, 300, { leading: true, trailing: false });
-const installSynESBuild = debounce(installSync, 300, { leading: true, trailing: false });
+const installSyncRollup = debounce(installSync as unknown as (...args: unknown[]) => void, 300, { leading: true, trailing: false }) as unknown as typeof installSync;
+const installSynESBuild = debounce(installSync as unknown as (...args: unknown[]) => void, 300, { leading: true, trailing: false }) as unknown as typeof installSync;
 
 function run(args: string[], options: CommandOptions, callback: CommandCallback) {
   const cwd: string = (options.cwd as string) || process.cwd();
@@ -38,16 +38,16 @@ function run(args: string[], options: CommandOptions, callback: CommandCallback)
       installSynESBuild('esbuild', `${process.platform}-${process.arch}`, { cwd });
 
       const wtr = resolveBin('@web/test-runner', 'wtr');
-      const spawnArgs = [];
+      const spawnArgs: string[] = [];
       if (!opts.config) Array.prototype.push.apply(spawnArgs, ['--config', config]);
       Array.prototype.push.apply(spawnArgs, filteredArgs);
       if (_.length === 0) Array.prototype.push.apply(spawnArgs, ['test/**/*.test.{ts,tsx,jsx,mjs}']);
 
       const queue = new Queue(1);
       queue.defer(spawn.bind(null, wtr, spawnArgs, options));
-      queue.await((err) => unlink(restore, callback.bind(null, err)));
+      queue.await((err) => unlink(restore!, callback.bind(null, err)));
     } catch (err) {
-      callback(err);
+      callback(err instanceof Error ? err : new Error(String(err)));
     }
   });
 }
