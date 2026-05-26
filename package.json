@@ -59,6 +59,7 @@
     "webpack-merge": "^6.0.1"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
     "@types/mocha": "*",
     "@types/node": "*",
     "module-link-unlink": "^1.1.0",
