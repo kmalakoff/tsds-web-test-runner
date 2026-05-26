@@ -7,7 +7,6 @@ const options = {
   concurrency: 1,
   launchOptions: {
     headless: true,
-    devtools: true,
   },
 };
 

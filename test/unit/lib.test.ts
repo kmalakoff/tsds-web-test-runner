@@ -33,12 +33,12 @@ function addTests(repo: string) {
     const deps = { ...(modulePackage.dependencies || {}), ...(modulePackage.peerDependencies || {}) };
 
     before((cb) => {
-      installGitRepo(repo, dest, (err?: Error): void => {
+      installGitRepo(repo, dest, (err?: Error | null): void => {
         if (err) return cb(err);
 
         const queue = new Queue(1);
-        queue.defer(linkModule.bind(null, modulePath, nodeModules));
-        for (const dep in deps) queue.defer(linkModule.bind(null, path.dirname(resolveSync(`${dep}/package.json`)), nodeModules));
+        queue.defer((cb) => linkModule(modulePath, nodeModules, (err) => cb(err)));
+        for (const dep in deps) queue.defer((cb) => linkModule(path.dirname(resolveSync(`${dep}/package.json`)), nodeModules, (err) => cb(err)));
         // Build the test repo so browser tests can find dist/esm/index.js
         queue.defer(spawn.bind(null, 'npm', ['run', 'build'], { cwd: dest, stdio: 'inherit' }));
         queue.await(cb);
@@ -46,15 +46,15 @@ function addTests(repo: string) {
     });
     after((cb) => {
       const queue = new Queue();
-      queue.defer(unlinkModule.bind(null, modulePath, nodeModules));
-      for (const dep in deps) queue.defer(unlinkModule.bind(null, path.dirname(resolveSync(`${dep}/package.json`)), nodeModules));
+      queue.defer((cb) => unlinkModule(modulePath, nodeModules, (err) => cb(err)));
+      for (const dep in deps) queue.defer((cb) => unlinkModule(path.dirname(resolveSync(`${dep}/package.json`)), nodeModules, (err) => cb(err)));
       queue.await(cb);
     });
 
     describe('happy path', () => {
       it('test:browser', (done) => {
         // Requires Playwright: npx -y playwright install --with-deps
-        testBrowser([], { cwd: dest }, (err?: Error): void => {
+        testBrowser([], { cwd: dest }, (err?: Error | null): void => {
           if (err) return done(err);
 
           done();
