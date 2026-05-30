@@ -14,6 +14,7 @@ export default function createConfig(mergeConfig = {}) {
   const config = {
     browserStartTimeout: 600000, // 10 mins
     testsStartTimeout: 600000, // 10 mins
+    staticLogging: true,
     nodeResolve: true,
     browsers: [
       playwrightLauncher({
