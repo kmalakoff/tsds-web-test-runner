@@ -12,6 +12,9 @@ import { installPath } from 'tsds-lib';
 import url from 'url';
 
 const major = +process.versions.node.split('.')[0];
+const minor = +process.versions.node.split('.')[1];
+// @web/test-runner 1.x require()s ESM (puppeteer-core), unflagged only from 22.12
+const supported = major > 22 || (major === 22 && minor >= 12);
 const __dirname = path.dirname(typeof __filename === 'undefined' ? url.fileURLToPath(import.meta.url) : __filename);
 const dist = path.join(__dirname, '..');
 const config = path.join(dist, 'esm', 'wtr.config.js');
@@ -55,7 +58,7 @@ function run(args: string[], options: CommandOptions, callback: CommandCallback)
 
 type commandFunction = (args: string[], options: CommandOptions, callback: CommandCallback) => void;
 
-const worker = (major >= 20 ? run : bind('>=20', path.join(dist, 'cjs', 'command.js'), { callbacks: true })) as commandFunction;
+const worker = (supported ? run : bind('>=22.12', path.join(dist, 'cjs', 'command.js'), { callbacks: true })) as commandFunction;
 
 export default function testBrowser(args: string[], options: CommandOptions, callback: CommandCallback): void {
   worker(args, options, callback);
