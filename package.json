@@ -75,10 +75,6 @@
     "node": ">=0.8"
   },
   "allowScripts": {
-    "esbuild": true,
-    "node-filename-to-dist-paths": true,
-    "node-semvers": true,
-    "node-version-use": true,
-    "thread-sleep-compat": true
+    "esbuild": true
   }
 }
