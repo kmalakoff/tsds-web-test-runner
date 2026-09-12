@@ -8,8 +8,15 @@
 <div class="col-content">
 <div class="tsd-page-title">
 <h1>tsds-web-test-runner</h1></div>
-<div class="tsd-panel tsd-typography"><h2 id="tsds-web-test-runner" class="tsd-anchor-link">tsds-web-test-runner<a href="#tsds-web-test-runner" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<p>For usage, see <a href="https://www.npmjs.com/package/ts-dev-stack">ts-dev-stack</a></p>
+<div class="tsd-panel tsd-typography"><h1 id="tsds-web-test-runner" class="tsd-anchor-link">tsds-web-test-runner<a href="#tsds-web-test-runner" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p>This package is an internal command adapter for running browser tests through <a href="https://www.npmjs.com/package/ts-dev-stack">ts-dev-stack</a>, not a standalone end-user command.</p>
+<p>Install and run the parent CLI:</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-3">--save-dev</span><span class="hl-1"> </span><span class="hl-2">ts-dev-stack</span><br/><span class="hl-0">tsds</span><span class="hl-1"> </span><span class="hl-2">test:browser</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Pass the Web Test Runner arguments after <code>test:browser</code>, for example <code>tsds test:browser --config wtr.config.mjs</code>.</p>
+<p>Without an explicit test path, it runs <code>test/**/*.test.{ts,tsx,jsx,mjs}</code>. Add
+<code>--dry-run</code> to check command selection without opening a browser.</p>
 </div></div>
 <div class="col-sidebar">
 <div class="page-menu">
