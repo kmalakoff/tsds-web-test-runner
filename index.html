@@ -10,13 +10,29 @@
 <h1>tsds-web-test-runner</h1></div>
 <div class="tsd-panel tsd-typography"><h1 id="tsds-web-test-runner" class="tsd-anchor-link">tsds-web-test-runner<a href="#tsds-web-test-runner" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
 <p>This package is an internal command adapter for running browser tests through <a href="https://www.npmjs.com/package/ts-dev-stack">ts-dev-stack</a>, not a standalone end-user command.</p>
-<p>Install and run the parent CLI:</p>
-<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-3">--save-dev</span><span class="hl-1"> </span><span class="hl-2">ts-dev-stack</span><br/><span class="hl-0">tsds</span><span class="hl-1"> </span><span class="hl-2">test:browser</span>
+<p>Install the parent CLI and this adapter locally so browser installation uses the
+adapter's resolved Playwright version.</p>
+<p>The default configuration runs Chromium, Firefox and WebKit. Their matching
+Playwright binaries and OS dependencies must be installed before running tests.
+The browser installation step below uses the locally installed Playwright CLI.
+Provide browser tests using Mocha's <code>describe</code> and <code>it</code> under
+<code>test/**/*.test.{ts,tsx,jsx,mjs}</code> before running the test command.</p>
+<pre><code class="bash"><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-3">--save-dev</span><span class="hl-1"> </span><span class="hl-2">ts-dev-stack</span><span class="hl-1"> </span><span class="hl-2">tsds-web-test-runner</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-3">--no</span><span class="hl-1"> </span><span class="hl-3">--</span><span class="hl-1"> </span><span class="hl-2">playwright</span><span class="hl-1"> </span><span class="hl-2">install</span><span class="hl-1"> </span><span class="hl-3">--with-deps</span><br/><span class="hl-0">npm</span><span class="hl-1"> </span><span class="hl-2">exec</span><span class="hl-1"> </span><span class="hl-3">--no</span><span class="hl-1"> </span><span class="hl-3">--</span><span class="hl-1"> </span><span class="hl-2">tsds</span><span class="hl-1"> </span><span class="hl-2">test:browser</span>
 </code><button type="button">Copy</button></pre>
 
-<p>Pass the Web Test Runner arguments after <code>test:browser</code>, for example <code>tsds test:browser --config wtr.config.mjs</code>.</p>
+<p>Repeat browser installation after changing the resolved Playwright version. If
+you set <code>PLAYWRIGHT_BROWSERS_PATH</code>, use the same absolute path for installation
+and execution. See <a href="https://playwright.dev/docs/browsers#managing-browser-binaries">Playwright browser management</a>
+and <a href="media/CONTRIBUTING.md">repository test setup</a>.</p>
+<p>Pass the Web Test Runner arguments after <code>test:browser</code>, for example
+<code>npm exec --no -- tsds test:browser --config wtr.config.mjs</code>.</p>
 <p>Without an explicit test path, it runs <code>test/**/*.test.{ts,tsx,jsx,mjs}</code>. Add
 <code>--dry-run</code> to check command selection without opening a browser.</p>
+<p>Starting with the planned 1.21.0 release, the adapter attempts to restore its
+temporary installation link after setup or test failure. A sole operation or
+restoration failure is reported directly. If both fail, the callback
+receives an Error whose <code>errors</code> array contains the operation error first and the
+restoration error second.</p>
 </div></div>
 <div class="col-sidebar">
 <div class="page-menu">
