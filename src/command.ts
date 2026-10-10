@@ -1,6 +1,6 @@
 import spawn from 'cross-spawn-cb';
 import getopts from 'getopts-compat';
-import { installSync, removeSync } from 'install-optional';
+import { installSync, matchesLibc, removeSync } from 'install-optional';
 import { link, unlink } from 'link-unlink';
 import debounce from 'lodash.debounce';
 import { bind } from 'node-version-call';
@@ -17,10 +17,18 @@ const minor = +process.versions.node.split('.')[1];
 const supported = major > 22 || (major === 22 && minor >= 12);
 const __dirname = path.dirname(typeof __filename === 'undefined' ? url.fileURLToPath(import.meta.url) : __filename);
 const dist = path.join(__dirname, '..');
-const config = path.join(dist, 'esm', 'wtr.config.js');
+const config = path.join(dist, 'cjs', 'wtr.config.js');
 
 const installSyncRollup = debounce(installSync as unknown as (...args: unknown[]) => void, 300, { leading: true, trailing: false }) as unknown as typeof installSync;
 const installSynESBuild = debounce(installSync as unknown as (...args: unknown[]) => void, 300, { leading: true, trailing: false }) as unknown as typeof installSync;
+
+function commandError(failures: unknown[]): Error | undefined {
+  if (failures.length === 0) return undefined;
+  if (failures.length === 1 && failures[0] instanceof Error) return failures[0];
+  const error: Error & { errors?: unknown[] } = new Error('Browser command or restoration failed');
+  error.errors = failures;
+  return error;
+}
 
 function run(args: string[], options: CommandOptions, callback: CommandCallback) {
   const cwd: string = (options.cwd as string) || process.cwd();
@@ -33,11 +41,33 @@ function run(args: string[], options: CommandOptions, callback: CommandCallback)
   }
 
   link(cwd, installPath(options), (err, restore) => {
-    if (err) return callback(err);
+    if (err !== undefined && err !== null) return callback(commandError([err]));
     if (!restore) return callback(new Error('link did not return restore path'));
+    const acquiredTarget = restore;
+
+    let cleanupStarted = false;
+    function finish(operationFailed: boolean, operationError: unknown): void {
+      if (cleanupStarted) return;
+      cleanupStarted = true;
+      let completed = false;
+      function complete(cleanupFailed: boolean, cleanupError: unknown): void {
+        if (completed) return;
+        completed = true;
+        const failures: unknown[] = [];
+        if (operationFailed) failures.push(operationError);
+        if (cleanupFailed) failures.push(cleanupError);
+        callback(commandError(failures));
+      }
+      try {
+        unlink(acquiredTarget, (error: unknown) => complete(error !== undefined && error !== null, error));
+      } catch (error: unknown) {
+        if (completed) throw error;
+        complete(true, error);
+      }
+    }
 
     try {
-      installSyncRollup('rollup', `${process.platform}-${process.arch}`, { cwd });
+      installSyncRollup('rollup', `${process.platform}-${process.arch}`, { cwd, filter: matchesLibc });
       removeSync('esbuild', '@esbuild/', { cwd });
       installSynESBuild('esbuild', `${process.platform}-${process.arch}`, { cwd });
 
@@ -48,10 +78,20 @@ function run(args: string[], options: CommandOptions, callback: CommandCallback)
       if (_.length === 0) Array.prototype.push.apply(spawnArgs, ['test/**/*.test.{ts,tsx,jsx,mjs}']);
 
       const queue = new Queue(1);
-      queue.defer(spawn.bind(null, wtr, spawnArgs, options));
-      queue.await((err) => unlink(restore, callback.bind(null, err)));
-    } catch (err) {
-      callback(err instanceof Error ? err : new Error(String(err)));
+      let operationFailed = false;
+      let operationError: unknown;
+      queue.defer((cb) =>
+        spawn(wtr, spawnArgs, options, (error: unknown) => {
+          operationFailed = error !== undefined && error !== null;
+          operationError = error;
+          // Retain the operation error before the queue's truthy classification.
+          cb();
+        })
+      );
+      queue.await(() => finish(operationFailed, operationError));
+    } catch (error: unknown) {
+      if (cleanupStarted) throw error;
+      finish(true, error);
     }
   });
 }

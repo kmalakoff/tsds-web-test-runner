@@ -7,7 +7,10 @@ jobs:
   test:
     name: Node.js ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.tmp/playwright-browsers
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
@@ -19,7 +22,7 @@ jobs:
       - run: git config --global user.email "actions@users.noreply.github.com"
       - run: npm ci
       - name: Playwright
-        run: npx -y playwright install --with-deps
+        run: npm exec --no -- playwright install --with-deps
       - run: npm run prepublishOnly
       - run: npm run test
       - run: npm run test:engines
