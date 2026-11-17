@@ -76,6 +76,8 @@ function run(args: string[], options: CommandOptions, callback: CommandCallback)
       if (!opts.config) Array.prototype.push.apply(spawnArgs, ['--config', config]);
       Array.prototype.push.apply(spawnArgs, filteredArgs);
       if (_.length === 0) Array.prototype.push.apply(spawnArgs, ['test/**/*.test.{ts,tsx,jsx,mjs}']);
+      // the self link lives at test/node_modules/<name> and the file globber follows links: never walk node_modules
+      spawnArgs.push('!**/node_modules/**');
 
       const queue = new Queue(1);
       let operationFailed = false;

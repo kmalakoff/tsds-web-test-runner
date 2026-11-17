@@ -3,8 +3,15 @@ import assert from 'assert';
 import { type ChildProcessWithoutNullStreams, execFile, spawn } from 'child_process';
 import fs from 'fs';
 import { safeRmSync } from 'fs-remove-compat';
+import os from 'os';
 import path from 'path';
 import workerSource, { acquisitionSource } from '../lib/restoration-worker.ts';
+
+function defaultBrowsersPath(): string {
+  if (process.platform === 'win32') return path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'ms-playwright');
+  if (process.platform === 'darwin') return path.join(os.homedir(), 'Library', 'Caches', 'ms-playwright');
+  return path.join(process.env.XDG_CACHE_HOME || path.join(os.homedir(), '.cache'), 'ms-playwright');
+}
 
 const scratch = path.resolve('.tmp');
 const modulePath = path.resolve('.');
@@ -52,6 +59,8 @@ function run(scenario: string, done: Mocha.Done): void {
     fs.writeFileSync(worker, workerSource);
     fs.writeFileSync(path.join(root, 'acquisition.cjs'), acquisitionSource);
     const env: NodeJS.ProcessEnv = { ...process.env, HOME: home, USERPROFILE: home };
+    // Playwright finds its browsers under the user's home; the child gets a private home, so name the real folder (Playwright's documented defaults)
+    if (!env.PLAYWRIGHT_BROWSERS_PATH) env.PLAYWRIGHT_BROWSERS_PATH = defaultBrowsersPath();
     // The child owns its native caches; the browser path remains the real installed Playwright path.
     delete env.NODE_OPTIONS;
     child = spawn(process.execPath, [worker, root, scenario, modulePath], { env, detached: process.platform !== 'win32', stdio: 'pipe' });
